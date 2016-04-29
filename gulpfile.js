@@ -1,4 +1,5 @@
 'use strict';
+const isDev = !process.env.NODE_ENV || process.env.NODE_ENV == 'dev';
 
 // Получение настроек папок из package.json
 const pjson = require('./package.json');
@@ -14,37 +15,44 @@ const sourcemaps = require('gulp-sourcemaps'); //Создает карту дл�
 const mqpacker = require('css-mqpacker'); //Пакует одинаковые css элементы в один
 const gulpIf = require('gulp-if'); //Добавляет gulp конструкцию if else
 const newer = require('gulp-newer'); //Запускают таски только для изменившихся файлов
-const notify = required('gulp-notify'); //Выводит оповещения 
-const uglify = required('gulp-uglify'); //Минифицирует js код
-const concat = required('gulp-concat'); //Конкатинирует файлы
+const notify = require('gulp-notify'); //Выводит оповещения 
+const uglify = require('gulp-uglify'); //Минифицирует js код
+const concat = require('gulp-concat'); //Конкатинирует файлы
+const stylus = require('gulp-stylus'); //Подключает препроцессор stylus
+const autoprefixer = require('autoprefixer-stylus'); //Добавляет автоматическое добавление префиксов
+const browserSync = require('browser-sync').create(); // Запускает веб сервер с livereload
+
                                     /* РАБОТА С КАРТИНКАМИ */
 const imagemin = require('gulp-imagemin');
 const pngquant = require('imagemin-pngquant');
 
-                                    /* POSTCSS */
-const postcss = require('gulp-postcss'); //Пост css, куча функций
-const svgo = require('postcss-svgo'); //Редактирует (уменьшает) svg 
-const autoprefixer = require('autoprefixer'); //Добавляет автоматическое добавление префиксов
-const cssnano = require('cssnano'); //Минифицирует css
 
 
 
-                                         /* POSTCSS */
-gulp.task('postcss', function(){
-    console.log('-----------Выполняется POSTCSS');
-    return gulp.src('src/style.css')
-        .pipe(postcss([
-            cssnext({
-                features: {
-                    autoprefixer: false  //Отключаем автопрефиксер, так как он устаревает
-                }
-            }),
-            svgo,
-            autoprefixer, // Подключаем новый автопрефиксер
-            cssnano
-        ]))
-        .pipe(gulp.dest('build/style.css'))
+                                    /* КОМПИЛЯЦИЯ STYLUS */
+gulp.task('stylus', function(){
+    console.log('------------Компиляция Sylus');
+    return gulp.src(dirs.source + '/blocks/style.styl')
+    .pipe(gulpIf(isDev, sourcemaps.init()))
+    .pipe(plumber(function(error) {
+            gutil.log(gutil.colors.red(error.message));
+            this.emit('end');
+        }))
+    .pipe(debug({title: "STYLUS:"}))
+    .pipe(stylus({
+			use: [autoprefixer('last 2 versions', '>1%', 'ie 9', 'Opera 12.1')]
+		}))    
+    .on('error', notify.onError(function(err){
+      return {
+        title: 'Styles compilation error',
+        message: err.message
+      }
+    }))        
+        .pipe(gulpIf(isDev, sourcemaps.write()))
+        .pipe(gulp.dest('./build/css'))
+        .pipe(notify("STYLUS COMPLETED"));
 });
+                                    
                                           /* JADE */
  gulp.task('jade', function(){
      console.log('-----------Собирается JADE');
@@ -57,6 +65,7 @@ gulp.task('postcss', function(){
             pretty: true //Для того, что бы html был читаем, если убрать, то он будет минифицироваться
         }))
         .pipe(gulp.dest('build/'))
+        .pipe(notify("JADE COMPILED TO HTML"))
  });
                                          /* Отчистка build */
 gulp.task('clean', function () {
@@ -65,4 +74,5 @@ gulp.task('clean', function () {
     dirs.build + '/**/*',
     '!' + dirs.build + '/readme.md'
   ]);
+    
 });
