@@ -68,7 +68,7 @@ gulp.task('stylus', function(){
         .pipe(gulp.dest('build/'))
         .pipe(notify("JADE COMPILED TO HTML"))
  });
-                                  /* Копирование и оптимизация изображений */ //Нужно править
+                                  /* Копирование и оптимизация изображений */ 
 gulp.task('img', function () {
   console.log('---------- Копирование и оптимизация картинок');
  
