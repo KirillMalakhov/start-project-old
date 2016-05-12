@@ -57,7 +57,7 @@ gulp.task('stylus', function(){
                                           /* JADE */
  gulp.task('jade', function(){
      console.log('-----------Собирается JADE');
-      gulp.src('./src/blocks/**/*.jade')
+      gulp.src('./src/**/*.jade')
         .pipe(plumber(function(error){
             gutil.log(gutil.colors.red(error.message)); //Красит ошибку в красный цвет
             this.emit('end');
@@ -121,8 +121,8 @@ gulp.task('js', function (callback) {
       }))
       .pipe(gulpIf(isDev, sourcemaps.write('.')))
       .pipe(gulpIf(isDev, debug({title: "JS SOURCEMAPS:"})))
-      .pipe(gulp.dest(dirs.build + '/js'));
-  
+      .pipe(gulp.dest(dirs.build + '/js'))
+      .pipe(notify("JS COMPLETED"));
  
 });
 
@@ -151,7 +151,7 @@ gulp.task('browser-sync', () => {
 });
 
                                 /*Сборка всего*/
-gulp.task('build', ['clean','jade','stylus','img','js', 'debug'], function(){
+gulp.task('build', ['clean','jade','stylus','img','js'], function(){
     return gulp.src('build')
     .pipe(notify({
         title: 'COMAND BUILD',
